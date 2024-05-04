@@ -65,7 +65,7 @@ mydb.close()# close connection,and restart it to make the new table
 mydb = sqlite3.connect('crmdatabase.db')
 cursor = mydb.cursor()
 
-# Create customers table if it doesn't exist
+# Create products table if it doesn't exist
 cursor.execute('''CREATE TABLE IF NOT EXISTS products
                   (product_id INTEGER PRIMARY KEY, product_name TEXT, product_pieces INTEGER, product_price REAL, product_desc TEXT, product_stock INTEGER)''')
 
