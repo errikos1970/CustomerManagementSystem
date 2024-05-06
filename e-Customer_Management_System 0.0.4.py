@@ -6,7 +6,7 @@ Status: Stable
 
 changelog:
 ----------
-* changed database to crmdatabase 
+* changed database to crmbase 
 * 
 * 
 * 
@@ -53,7 +53,7 @@ style.map('TButton', foreground = [('active', '!disabled', 'green')],
 # the database functionality
 
 # Connect to SQLite database
-mydb = sqlite3.connect('crmdatabase.db')
+mydb = sqlite3.connect('crmbase.db')
 cursor = mydb.cursor()
 
 # Create customers table if it doesn't exist
@@ -62,7 +62,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS customers
 mydb.close()# close connection,and restart it to make the new table
 
 # reconnect to SQLite database,to create the other table
-mydb = sqlite3.connect('crmdatabase.db')
+mydb = sqlite3.connect('crmbase.db')
 cursor = mydb.cursor()
 
 # Create products table if it doesn't exist
