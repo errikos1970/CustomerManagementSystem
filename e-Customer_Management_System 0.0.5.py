@@ -1,6 +1,6 @@
 '''
 e-Customer_Management_System Version: 0.0.5
-Date: 04/05/2024
+Date: 06/05/2024
 Author: Errikos Ntinos
 Status: stable
 
@@ -8,7 +8,8 @@ changelog:
 ----------
 * added sales functionality
 * updated the treeview after sale
-* add functionality to sale more than one product 
+* add functionality to sale more than one product
+* changed id in customers table to customerid
 
 todo:
 -----
@@ -32,7 +33,7 @@ import os
 import re
 
 mainwindow = tk.Tk()
-mainwindow.title("Customer Management System")
+mainwindow.title("Customer Management System 0.0.5")
 mainwindow.geometry("1920x768")
 mainwindow.state('zoomed')#Maximize the window using state property
 #mainwindow.resizable(False,False) #locks the dimensions
@@ -50,16 +51,16 @@ style.map('TButton', foreground = [('active', '!disabled', 'green')],
 # the database functionality
 
 # Connect to SQLite database
-mydb = sqlite3.connect('crmdatabase.db')
+mydb = sqlite3.connect('crmdatabase005.db')
 cursor = mydb.cursor()
 
 # Create customers table if it doesn't exist
 cursor.execute('''CREATE TABLE IF NOT EXISTS customers
-                  (id INTEGER PRIMARY KEY, first_name TEXT, last_name TEXT, age INTEGER, email TEXT, phone TEXT, registration_date DATE)''')
+                  (customerid INTEGER PRIMARY KEY, first_name TEXT, last_name TEXT, age INTEGER, email TEXT, phone TEXT, registration_date DATE)''')
 mydb.close()# close connection,and restart it to make the new table
 
 # reconnect to SQLite database,to create the other table
-mydb = sqlite3.connect('crmdatabase.db')
+mydb = sqlite3.connect('crmdatabase005.db')
 cursor = mydb.cursor()
 
 # Create product table if it doesn't exist
@@ -67,12 +68,12 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS products
                   (product_id INTEGER PRIMARY KEY, product_name TEXT, stock INTEGER, product_price REAL, product_desc TEXT)''')
 mydb.close()
 
-mydb = sqlite3.connect('crmdatabase.db')
+mydb = sqlite3.connect('crmdatabase005.db')
 cursor = mydb.cursor()
 
 # Create sales table if it doesn't exist
 cursor.execute('''CREATE TABLE IF NOT EXISTS sales
-                  (sale_id INTEGER PRIMARY KEY, customer_id INTEGER, stock INTEGER, product_id INTEGER, sale_date DATE)''')
+                  (sale_id INTEGER PRIMARY KEY, customerid INTEGER, stock INTEGER, product_id INTEGER, sale_date DATE)''')
 
 
 # Create a notebook (tabbed interface) to contain different searches
@@ -137,7 +138,7 @@ def search(search_type, query_var, results_text):
         return
 
     if search_type == "customers":
-        columns = ("id", "first_name", "last_name", "age", "email", "phone")
+        columns = ("customerid", "first_name", "last_name", "age", "email", "phone")
         table_name = "customers"
     elif search_type == "products":
         columns = ("product_id", "product_name", "stock", "product_price", "product_desc")
@@ -212,7 +213,7 @@ def updateProductsView(rows):
 
 def clearCustomersView():
     # Query to fetch data from the customers table
-    customer_query = "SELECT id, first_name, last_name, age, email, phone FROM customers"
+    customer_query = "SELECT customerid, first_name, last_name, age, email, phone FROM customers"
     cursor.execute(customer_query)
     customer_rows = cursor.fetchall()
     rows = customer_rows
@@ -262,16 +263,16 @@ def add_new_customer():
         messagebox.showerror("Invalid Email", "Please enter a valid email address.")
         return
     # All required fields are filled and email is valid, proceed with adding the customer
-    query = "INSERT INTO customers(id, first_name, last_name, age, email, phone, registration_date) VALUES(NULL, ?, ?, ?, ?, ?, DATE('now'))"
+    query = "INSERT INTO customers(customerid, first_name, last_name, age, email, phone, registration_date) VALUES(NULL, ?, ?, ?, ?, ?, DATE('now'))"
     cursor.execute(query, (fname, lname, age, email, phone))
     mydb.commit()
     clearCustomersView()
 
 def delete_customer():
-    customer_id = t1.get()
+    customerid = t1.get()
     if messagebox.askyesno("DELETE CUSTOMER", "DELETE CUSTOMER ?"):
-        query = "DELETE FROM customers WHERE id = ?"
-        cursor.execute(query, (customer_id,))
+        query = "DELETE FROM customers WHERE customerid = ?"
+        cursor.execute(query, (customerid,))
         mydb.commit()
         clearCustomersView()
     else:
@@ -286,7 +287,7 @@ def update_customer():
     phone = t6.get()
     
     if messagebox.askyesno("UPDATE CUSTOMER", "UPDATE CUSTOMER ?"):
-        query = "UPDATE customers SET first_name = ?, last_name = ?, age = ? , email = ? , phone = ? WHERE id = ?" 
+        query = "UPDATE customers SET first_name = ?, last_name = ?, age = ? , email = ? , phone = ? WHERE customerid = ?" 
         cursor.execute(query, (fname, lname, age, email, phone, custid))
         mydb.commit()
         clearCustomersView()
@@ -347,12 +348,12 @@ def update_product():
 
 # Function to handle the sale operation
 def sell_product():
-    customer_id = ent_sale_customer_id.get()
+    customerid = ent_sale_customer_id.get()
     product_id = ent_sale_product_id.get()
     quantity = ent_sale_quantity.get()  # Get the quantity from the entry field
 
     # Check if customer ID, product ID, and quantity are provided
-    if not customer_id or not product_id or not quantity:
+    if not customerid or not product_id or not quantity:
         messagebox.showerror("Error", "Please provide customer ID, product ID, and quantity.")
         return
 
@@ -374,7 +375,7 @@ def sell_product():
 
     # Record the sale in the database for each quantity sold
     for _ in range(int(quantity)):
-        cursor.execute("INSERT INTO sales (customer_id, product_id, sale_date) VALUES (?, ?, DATE('now'))", (customer_id, product_id))
+        cursor.execute("INSERT INTO sales (customerid, product_id, sale_date) VALUES (?, ?, DATE('now'))", (customerid, product_id))
 
     mydb.commit()  # Commit the transaction
 
@@ -448,7 +449,7 @@ trv_customers.place(x=0, y=0)
 for col in (1, 2, 3, 4, 5, 6):
     trv_customers.heading(col, text=f"Column {col}")
     trv_customers.column(col, width=150, minwidth=100) # original: (col, width=150, minwidth=100)
-update_treeview(trv_customers, "SELECT id, first_name, last_name, age, email, phone FROM customers")
+update_treeview(trv_customers, "SELECT customerid, first_name, last_name, age, email, phone FROM customers")
 # end of customers treeview
 
 # Create the products Treeview 
@@ -598,10 +599,10 @@ lbl8.grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
 lbl9 = ttk.Label(frame_products, text="Product Stock")
 lbl9.grid(row=2, column=0, padx=5, pady=5, sticky=tk.W)
 
-lbl10 = ttk.Label(frame_products, text="Product_price")
+lbl10 = ttk.Label(frame_products, text="Product Price")
 lbl10.grid(row=3, column=0, padx=5, pady=5, sticky=tk.W)
 
-lbl11 = ttk.Label(frame_products, text="Product_desc")
+lbl11 = ttk.Label(frame_products, text="Product Description")
 lbl11.grid(row=4, column=0, padx=5, pady=5, sticky=tk.W)
 
 #lbl12 = ttk.Label(frame_products, text="Product Stock")
@@ -650,8 +651,7 @@ lbl_sale_product_id.pack(side=tk.LEFT, padx=10, pady=5)
 ent_sale_product_id = ttk.Entry(mainwindow)
 ent_sale_product_id.pack(side=tk.LEFT, padx=10, pady=5)
 
-btn_sale_product = ttk.Button(mainwindow, text="Sell Product", command=sell_product)
-btn_sale_product.pack(side=tk.LEFT, padx=10, pady=5)
+
 
 # Add entry field for quantity
 lbl_sale_quantity = ttk.Label(mainwindow, text="Quantity:")
@@ -659,6 +659,9 @@ lbl_sale_quantity.pack(side=tk.LEFT, padx=10, pady=5)
 
 ent_sale_quantity = ttk.Entry(mainwindow)
 ent_sale_quantity.pack(side=tk.LEFT, padx=10, pady=5)
+
+btn_sale_product = ttk.Button(mainwindow, text="Sell Product", command=sell_product)
+btn_sale_product.pack(side=tk.LEFT, padx=10, pady=5)
 
 mainwindow.mainloop()
 

@@ -35,7 +35,7 @@ import os
 import re
 
 mainwindow = tk.Tk()
-mainwindow.title("Customer Management System")
+mainwindow.title("Customer Management System 0.0.4")
 mainwindow.geometry("1920x768")
 mainwindow.state('zoomed')#Maximize the window using state property
 #mainwindow.resizable(False,False) #locks the dimensions
